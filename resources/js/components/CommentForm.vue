@@ -14,6 +14,19 @@
         </div>
 
         <div>
+            <label for="date">Дата</label>
+
+            <DatePicker
+                v-model="date"
+                type="datetime"
+                format="DD.MM.YYYY HH:mm"
+                value-type="format"
+                placeholder="Выберите дату и время"
+                :editable="false"
+            />
+        </div>
+
+        <div>
             <label for="text">Комментарий</label>
             <textarea
                 id="text"
@@ -35,12 +48,21 @@
 
 <script>
 import axios from 'axios'
+import DatePicker from 'vue2-datepicker'
+import { formatDateForApi } from '../utils/date'
+import { getCurrentDateTime } from '../utils/date'
+import 'vue2-datepicker/index.css'
 
 export default {
+    components: {
+        DatePicker
+    },
+
     data() {
         return {
             name: '',
             text: '',
+            date: getCurrentDateTime(),
             submitting: false,
             error: null
         }
@@ -48,7 +70,7 @@ export default {
 
     methods: {
         async submitComment() {
-            if (!this.name || !this.text || this.submitting) {
+            if (!this.name || !this.text || !this.date || this.submitting) {
                 return
             }
 
@@ -59,7 +81,7 @@ export default {
                 const response = await axios.post('/api/comments/', {
                     name: this.name,
                     text: this.text,
-                    date: new Date().toISOString()
+                    date: formatDateForApi(this.date)
                 })
 
                 const comment = response.data
@@ -72,6 +94,7 @@ export default {
 
                 this.name = ''
                 this.text = ''
+                this.date = getCurrentDateTime()
             } catch (error) {
                 console.error('Ошибка добавления комментария:', error)
                 this.error = 'Не удалось добавить комментарий. Попробуйте ещё раз.'
