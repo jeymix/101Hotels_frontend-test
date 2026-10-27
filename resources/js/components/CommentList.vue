@@ -1,51 +1,73 @@
 
+
 <template>
-    <div>
-        <div v-if="loading">
+    <section class="comments">
+        <div v-if="loading" class="comments__message">
             Загрузка комментариев...
         </div>
 
-        <div v-else-if="error">
+        <div v-else-if="error" class="comments__message comments__message--error">
             {{ error }}
         </div>
 
         <div v-else>
-            <div>
-                <label for="sort-field">Сортировать по:</label>
-                <select id="sort-field" v-model="sortBy">
-                    <option value="id">ID</option>
-                    <option value="date">Дате</option>
-                </select>
+            <div class="comments__toolbar">
+                <h2>Комментарии</h2>
 
-                <label for="sort-order">Порядок:</label>
-                <select id="sort-order" v-model="sortOrder">
-                    <option value="asc">По возрастанию</option>
-                    <option value="desc">По убыванию</option>
-                </select>
+                <div class="comments__sorting">
+                    <label>
+                        Сортировать по
+                        <select v-model="sortBy">
+                            <option value="id">ID</option>
+                            <option value="date">Дате</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Порядок
+                        <select v-model="sortOrder">
+                            <option value="asc">По возрастанию</option>
+                            <option value="desc">По убыванию</option>
+                        </select>
+                    </label>
+                </div>
             </div>
 
-            <p v-if="sortedComments.length === 0">
+            <p v-if="sortedComments.length === 0" class="comments__empty">
                 Комментариев пока нет.
             </p>
 
-            <article
-                v-for="comment in paginatedComments"
-                :key="comment.id"
-            >
-                <h3>{{ comment.name }}</h3>
-                <p>{{ comment.text }}</p>
-                <small>{{ comment.date }}</small>
-
-                <button
-                    type="button"
-                    @click="deleteComment(comment.id)"
+            <div v-else class="comments__list">
+                <article
+                    v-for="comment in paginatedComments"
+                    :key="comment.id"
+                    class="comment"
                 >
-                    Удалить
-                </button>
-            </article>
-            <div v-if="pageCount > 1">
+                    <div class="comment__header">
+                        <h3 class="comment__author">{{ comment.name }}</h3>
+                        <span class="comment__id">#{{ comment.id }}</span>
+                    </div>
+
+                    <p class="comment__text">{{ comment.text }}</p>
+
+                    <div class="comment__footer">
+                        <time class="comment__date">{{ comment.date }}</time>
+
+                        <button
+                            type="button"
+                            class="comment__delete"
+                            @click="deleteComment(comment.id)"
+                        >
+                            Удалить
+                        </button>
+                    </div>
+                </article>
+            </div>
+
+            <nav v-if="pageCount > 1" class="pagination" aria-label="Страницы комментариев">
                 <button
                     type="button"
+                    class="pagination__button"
                     :disabled="currentPage === 1"
                     @click="currentPage--"
                 >
@@ -56,6 +78,9 @@
                     v-for="page in pageCount"
                     :key="page"
                     type="button"
+                    class="pagination__button"
+                    :class="{ 'pagination__button--active': currentPage === page }"
+                    :aria-current="currentPage === page ? 'page' : null"
                     :disabled="currentPage === page"
                     @click="currentPage = page"
                 >
@@ -64,15 +89,17 @@
 
                 <button
                     type="button"
+                    class="pagination__button"
                     :disabled="currentPage === pageCount"
                     @click="currentPage++"
                 >
                     Далее
                 </button>
-            </div>
+            </nav>
         </div>
-    </div>
+    </section>
 </template>
+
 
 <script>
 import axios from 'axios'
